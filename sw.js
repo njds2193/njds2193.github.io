@@ -1,7 +1,7 @@
 // sw.js - Service Worker
 
-// Nombre de la caché actualizado a v2 para forzar la actualización
-const CACHE_NAME = 'agenda-pwa-cache-v2';
+// Nombre de la caché actualizado a v3 para incluir recursos externos
+const CACHE_NAME = 'agenda-pwa-cache-v3';
 
 // Lista de archivos actualizada con index.html
 const urlsToCache = [
@@ -9,16 +9,18 @@ const urlsToCache = [
   'index.html',             // Archivo HTML principal (renombrado)
   'manifest.json',          // El manifiesto de la aplicación
   'images/icon-192x192.png',// Icono de la PWA
-  'images/icon-512x512.png' // Otro icono de la PWA
+  'images/icon-512x512.png', // Otro icono de la PWA
+  'https://cdn.tailwindcss.com', // Tailwind CSS para estilos offline
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' // Fuente Inter
 ];
 
 // Evento 'install': se dispara cuando el Service Worker se instala por primera vez.
 self.addEventListener('install', event => {
-  console.log('Service Worker: Instalando v2...'); // Mensaje actualizado
+  console.log('Service Worker: Instalando v3...'); // Mensaje actualizado
   event.waitUntil(
     caches.open(CACHE_NAME) 
       .then(cache => {
-        console.log('Service Worker: Abriendo caché v2 y añadiendo archivos principales:', urlsToCache);
+        console.log('Service Worker: Abriendo caché v3 y añadiendo archivos principales:', urlsToCache);
         // Manejo de errores individuales al cachear
         return Promise.all(
             urlsToCache.map(url => {
@@ -29,18 +31,18 @@ self.addEventListener('install', event => {
         );
       })
       .then(() => {
-        console.log('Service Worker: Archivos principales intentados cachear en v2.');
+        console.log('Service Worker: Archivos principales intentados cachear en v3.');
         return self.skipWaiting(); // Activar nuevo SW inmediatamente
       })
       .catch(error => {
-        console.error('Service Worker: Falló la instalación general v2:', error);
+        console.error('Service Worker: Falló la instalación general v3:', error);
       })
   );
 });
 
 // Evento 'activate': se dispara después de que el SW se instala y está listo para tomar control.
 self.addEventListener('activate', event => {
-  console.log('Service Worker: Activando v2...'); // Mensaje actualizado
+  console.log('Service Worker: Activando v3...'); // Mensaje actualizado
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -53,7 +55,7 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      console.log('Service Worker: Activado v2 y cachés antiguas limpiadas.');
+      console.log('Service Worker: Activado v3 y cachés antiguas limpiadas.');
       return self.clients.claim(); // Tomar control inmediato
     })
   );
