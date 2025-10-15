@@ -447,6 +447,84 @@
                 padding: 1px 2px !important;
             }
         }
+        
+        /* Icon selection modal improvements */
+        .icon-selection-modal {
+            backdrop-filter: blur(4px);
+        }
+        
+        .icon-selection-modal .bg-white {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .icon-selection-modal button {
+            transition: all 0.2s ease;
+        }
+        
+        .icon-selection-modal button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .icon-selection-modal button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Date display styles */
+        .date-display-3d {
+            background: var(--card-gradient);
+            border: var(--border-3d);
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            padding: 1rem 1.5rem;
+            min-width: 120px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .date-display-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy), 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .date-display-3d .month-abbr {
+            color: var(--primary-color, #64748b);
+            margin-bottom: 0.25rem;
+        }
+        
+        .date-display-3d .day-number {
+            color: var(--primary-color, #1e293b);
+            line-height: 1;
+            margin: 0.25rem 0;
+        }
+        
+        .date-display-3d .day-abbr {
+            color: var(--primary-color, #64748b);
+            margin-top: 0.25rem;
+        }
+        
+        /* Mobile responsive date display */
+        @media (max-width: 768px) {
+            .date-display-3d {
+                min-width: 100px;
+                padding: 0.75rem 1rem;
+            }
+            
+            .date-display-3d .day-number {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .date-display-3d {
+                min-width: 80px;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .date-display-3d .day-number {
+                font-size: 1.75rem;
+            }
+        }
         .time-slot {
             display: flex;
             flex-direction: column;
@@ -745,32 +823,12 @@
         </div>
 
         <div id="agendaView" class="hidden container-3d p-6 mt-6">
-            <h2 id="agendaDateTitle" class="text-2xl font-bold text-slate-700 mb-4 text-center"></h2>
-            
             <!-- Date Selector Wheel -->
-            <div id="dateSelectorWheel" class="flex justify-center items-center space-x-2 md:space-x-4 mb-6 p-3 md:p-4 activity-card-3d">
-                <div id="prevDateBtn" class="p-2 icon-btn-3d transition-colors cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                    </svg>
-                </div>
-                
-                <div id="dateWheelContainer" class="flex items-center space-x-2 overflow-hidden">
-                    <div id="prevDate" class="date-wheel-item text-sm text-slate-500 activity-card-3d px-3 py-2 min-w-[110px] text-center whitespace-nowrap">
-                        <!-- Previous date will be populated here -->
-                    </div>
-                    <div id="currentDate" class="date-wheel-item text-base font-semibold text-slate-700 btn-primary-3d px-4 py-2 min-w-[140px] text-center whitespace-nowrap">
-                        <!-- Current date will be populated here -->
-                    </div>
-                    <div id="nextDate" class="date-wheel-item text-sm text-slate-500 activity-card-3d px-3 py-2 min-w-[110px] text-center whitespace-nowrap">
-                        <!-- Next date will be populated here -->
-                    </div>
-                </div>
-                
-                <div id="nextDateBtn" class="p-2 icon-btn-3d transition-colors cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
+            <div id="dateSelectorWheel" class="flex justify-center items-center mb-6 p-3 md:p-4 activity-card-3d">
+                <div id="currentDateDisplay" class="date-display-3d text-center">
+                    <div class="month-abbr text-sm font-medium opacity-70"></div>
+                    <div class="day-number text-3xl font-bold"></div>
+                    <div class="day-abbr text-sm font-medium opacity-70"></div>
                 </div>
             </div>
             <!-- Dual Schedule Container -->
@@ -1279,14 +1337,8 @@
         const work2SlotsContainerEl = document.getElementById('work2SlotsContainer');
         const dualScheduleContainerEl = document.getElementById('dualScheduleContainer');
         const singleScheduleContainerEl = document.getElementById('singleScheduleContainer');
-        const agendaDateTitleEl = document.getElementById('agendaDateTitle');
         // Date Selector Wheel Elements
         const dateSelectorWheelEl = document.getElementById('dateSelectorWheel');
-        const prevDateBtnEl = document.getElementById('prevDateBtn');
-        const nextDateBtnEl = document.getElementById('nextDateBtn');
-        const prevDateEl = document.getElementById('prevDate');
-        const currentDateEl = document.getElementById('currentDate');
-        const nextDateEl = document.getElementById('nextDate');
         // Add/Edit Modal Elements
         const addAppointmentModalEl = document.getElementById('addAppointmentModal');
         const modalTitleEl = document.getElementById('modalTitle'); 
@@ -1427,7 +1479,6 @@
         function renderAgendaView() {
             monthViewEl.classList.add('hidden');
             agendaViewEl.classList.remove('hidden');
-            agendaDateTitleEl.textContent = `${selectedAgendaDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
             updateDateSelectorWheel(); // Update the date selector wheel
             
             const dateKey = formatDateKey(selectedAgendaDate);
@@ -1471,45 +1522,55 @@
 
         // Updates the date selector wheel with current, previous, and next dates
         function updateDateSelectorWheel() {
-            const today = new Date();
-            const prevDate = new Date(selectedAgendaDate);
-            prevDate.setDate(prevDate.getDate() - 1);
-            const nextDate = new Date(selectedAgendaDate);
-            nextDate.setDate(nextDate.getDate() + 1);
+            const monthAbbr = selectedAgendaDate.toLocaleDateString('es-ES', { month: 'short' });
+            const dayNumber = selectedAgendaDate.getDate();
+            const dayAbbr = selectedAgendaDate.toLocaleDateString('es-ES', { weekday: 'short' });
             
-            // Update date elements with more readable format
-            prevDateEl.textContent = prevDate.toLocaleDateString('es-ES', { 
-                weekday: 'short', 
-                day: 'numeric', 
-                month: 'short' 
-            });
+            // Update the new date display
+            const monthElement = document.querySelector('.month-abbr');
+            const dayElement = document.querySelector('.day-number');
+            const dayAbbrElement = document.querySelector('.day-abbr');
             
-            currentDateEl.textContent = selectedAgendaDate.toLocaleDateString('es-ES', { 
-                weekday: 'short', 
-                day: 'numeric', 
-                month: 'short' 
-            });
+            if (monthElement) monthElement.textContent = monthAbbr;
+            if (dayElement) dayElement.textContent = dayNumber;
+            if (dayAbbrElement) dayAbbrElement.textContent = dayAbbr;
             
-            nextDateEl.textContent = nextDate.toLocaleDateString('es-ES', { 
-                weekday: 'short', 
-                day: 'numeric', 
-                month: 'short' 
-            });
+            // Apply theme colors
+            applyDateDisplayTheme();
+        }
+        
+        // Apply theme colors to date display
+        function applyDateDisplayTheme() {
+            const dateDisplay = document.querySelector('.date-display-3d');
+            if (!dateDisplay) return;
             
-            // Highlight today if it's the selected date
-            if (selectedAgendaDate.toDateString() === today.toDateString()) {
-                currentDateEl.classList.add('active', 'bg-green-50', 'border-green-300', 'text-green-700');
-                currentDateEl.classList.remove('bg-blue-50', 'border-blue-300', 'text-slate-700');
+            // Get current theme colors
+            const primaryColor = localStorage.getItem('primaryTextColor') || '#1f2937';
+            const secondaryColor = localStorage.getItem('secondaryTextColor') || '#6b7280';
+            
+            // Apply colors to date display elements
+            const monthAbbr = dateDisplay.querySelector('.month-abbr');
+            const dayNumber = dateDisplay.querySelector('.day-number');
+            const dayAbbr = dateDisplay.querySelector('.day-abbr');
+            
+            if (monthAbbr) monthAbbr.style.color = secondaryColor;
+            if (dayNumber) dayNumber.style.color = primaryColor;
+            if (dayAbbr) dayAbbr.style.color = secondaryColor;
+            
+            // Apply background gradient if custom theme is active
+            const customTheme = localStorage.getItem('customTheme');
+            if (customTheme) {
+                const theme = JSON.parse(customTheme);
+                dateDisplay.style.background = `linear-gradient(135deg, ${theme.color1} 0%, ${theme.color2} 100%)`;
+                
+                // Adjust text colors for better contrast
+                if (monthAbbr) monthAbbr.style.color = 'rgba(255, 255, 255, 0.8)';
+                if (dayNumber) dayNumber.style.color = 'white';
+                if (dayAbbr) dayAbbr.style.color = 'rgba(255, 255, 255, 0.8)';
             } else {
-                currentDateEl.classList.add('active', 'bg-blue-50', 'border-blue-300', 'text-slate-700');
-                currentDateEl.classList.remove('bg-green-50', 'border-green-300', 'text-green-700');
+                // Reset to default gradient
+                dateDisplay.style.background = 'var(--card-gradient)';
             }
-            
-            // Force update button colors after setting active class
-            setTimeout(() => {
-                updateActiveButtons();
-                forceUpdateModalButtons();
-            }, 50);
         }
         
         // Navigate to a different date
@@ -1812,8 +1873,14 @@
 
         // Show icon selection modal
         function showIconSelectionModal(workType) {
+            // Remove any existing modal first
+            const existingModal = document.querySelector('.icon-selection-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
             const modal = document.createElement('div');
-            modal.classList.add('fixed', 'inset-0', 'bg-black', 'bg-opacity-50', 'flex', 'items-center', 'justify-center', 'z-50');
+            modal.classList.add('icon-selection-modal', 'fixed', 'inset-0', 'bg-black', 'bg-opacity-50', 'flex', 'items-center', 'justify-center', 'z-50');
             
             const modalContent = document.createElement('div');
             modalContent.classList.add('bg-white', 'rounded-lg', 'p-6', 'max-w-2xl', 'w-full', 'mx-4', 'max-h-96', 'overflow-y-auto');
@@ -1821,7 +1888,7 @@
             modalContent.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">Seleccionar Icono para ${workTypes[workType].name}</h3>
-                    <button class="text-gray-500 hover:text-gray-700 text-xl" onclick="this.closest('.fixed').remove()">&times;</button>
+                    <button class="text-gray-500 hover:text-gray-700 text-xl" onclick="closeIconModal()">&times;</button>
                 </div>
                 <div class="grid grid-cols-10 gap-2" id="iconGrid">
                     ${availableIcons.map(icon => `
@@ -1840,9 +1907,22 @@
             // Close modal when clicking outside
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    modal.remove();
+                    closeIconModal();
                 }
             });
+            
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close icon selection modal
+        function closeIconModal() {
+            const modal = document.querySelector('.icon-selection-modal');
+            if (modal) {
+                modal.remove();
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
         }
 
         // Select icon for work type
@@ -1856,8 +1936,8 @@
             // Update the display
             updateWorkTypeIcons();
             
-            // Close modal
-            document.querySelector('.fixed.inset-0').remove();
+            // Close modal properly
+            closeIconModal();
             
             // Show success message
             showNotification(`Icono actualizado para ${workTypes[workType].name}: ${icon}`);
@@ -1878,15 +1958,26 @@
                 work2LegendIcon.className = 'mr-2 icon-rocket';
             }
             
-            // Update header icons
-            const work1Header = document.querySelector('[data-work-type="work1"]');
-            const work2Header = document.querySelector('[data-work-type="work2"]');
+            // Update header icons in dual schedule view
+            const work1Header = document.querySelector('#dualScheduleContainer h4:first-child');
+            const work2Header = document.querySelector('#dualScheduleContainer h4:last-child');
             
             if (work1Header) {
-                work1Header.innerHTML = `<span class="mr-1 icon-lightning">${workTypes['work1'].icon}</span> Trabajo 1`;
+                work1Header.innerHTML = `${workTypes['work1'].icon} Trabajo 1`;
             }
             if (work2Header) {
-                work2Header.innerHTML = `<span class="mr-1 icon-rocket">${workTypes['work2'].icon}</span> Trabajo 2`;
+                work2Header.innerHTML = `${workTypes['work2'].icon} Trabajo 2`;
+            }
+            
+            // Update select options
+            const work1Option = document.querySelector('option[value="work1"]');
+            const work2Option = document.querySelector('option[value="work2"]');
+            
+            if (work1Option) {
+                work1Option.innerHTML = `${workTypes['work1'].icon} Trabajo 1`;
+            }
+            if (work2Option) {
+                work2Option.innerHTML = `${workTypes['work2'].icon} Trabajo 2`;
             }
             
             // Update appointment segments
@@ -1907,6 +1998,11 @@
                     }
                 }
             });
+            
+            // Force re-render of agenda view to update all icons
+            if (!document.getElementById('agendaView').classList.contains('hidden')) {
+                renderAgendaView();
+            }
         }
 
         // Show notification
@@ -2207,6 +2303,15 @@
                 }
                 .text-slate-500, .text-slate-400, p, span { 
                     color: ${secondaryColor} !important; 
+                }
+                
+                /* Date display colors */
+                .date-display-3d .month-abbr,
+                .date-display-3d .day-abbr {
+                    color: ${secondaryColor} !important;
+                }
+                .date-display-3d .day-number {
+                    color: ${primaryColor} !important;
                 }
                 
                 /* Active/Selected buttons */
@@ -3925,46 +4030,27 @@
         });
         
         // Date Selector Wheel Navigation
-        prevDateBtnEl.addEventListener('click', () => {
-            const prevDate = new Date(selectedAgendaDate);
-            prevDate.setDate(prevDate.getDate() - 1);
-            navigateToDate(prevDate);
-            // Update button states
-            setTimeout(() => {
-                updateActiveButtons();
-            }, 100);
-        });
         
-        nextDateBtnEl.addEventListener('click', () => {
-            const nextDate = new Date(selectedAgendaDate);
-            nextDate.setDate(nextDate.getDate() + 1);
-            navigateToDate(nextDate);
-            // Update button states
-            setTimeout(() => {
-                updateActiveButtons();
-            }, 100);
-        });
-        
-        // Click on date elements to navigate
-        prevDateEl.addEventListener('click', () => {
-            const prevDate = new Date(selectedAgendaDate);
-            prevDate.setDate(prevDate.getDate() - 1);
-            navigateToDate(prevDate);
-            // Update button states
-            setTimeout(() => {
-                updateActiveButtons();
-            }, 100);
-        });
-        
-        nextDateEl.addEventListener('click', () => {
-            const nextDate = new Date(selectedAgendaDate);
-            nextDate.setDate(nextDate.getDate() + 1);
-            navigateToDate(nextDate);
-            // Update button states
-            setTimeout(() => {
-                updateActiveButtons();
-            }, 100);
-        });
+        // Click on date display to navigate (tap to change date)
+        const currentDateDisplay = document.getElementById('currentDateDisplay');
+        if (currentDateDisplay) {
+            currentDateDisplay.addEventListener('click', () => {
+                // Cycle through dates: today -> tomorrow -> yesterday -> today
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                
+                if (selectedAgendaDate.toDateString() === today.toDateString()) {
+                    navigateToDate(tomorrow);
+                } else if (selectedAgendaDate.toDateString() === tomorrow.toDateString()) {
+                    navigateToDate(yesterday);
+                } else {
+                    navigateToDate(today);
+                }
+            });
+        }
         
         // Mouse wheel navigation on the date selector wheel
         dateSelectorWheelEl.addEventListener('wheel', (event) => {
@@ -4136,8 +4222,56 @@
           showNotification('¡App instalada exitosamente!');
         });
 
-        // Check if app is already installed
+        // Debug function to check if all required elements are present
+        function debugCheckElements() {
+          const requiredElements = [
+            'agendaView',
+            'agendaSlotsContainer', 
+            'singleScheduleContainer',
+            'currentDateDisplay'
+          ];
+          
+          const missingElements = [];
+          requiredElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (!element) {
+              missingElements.push(id);
+            }
+          });
+          
+          if (missingElements.length > 0) {
+            console.error('Elementos faltantes:', missingElements);
+            return false;
+          }
+          
+          console.log('Todos los elementos requeridos están presentes');
+          return true;
+        }
+        
+        // Initialize the application
         window.addEventListener('load', () => {
+          try {
+            // Debug check
+            if (!debugCheckElements()) {
+              throw new Error('Elementos requeridos faltantes');
+            }
+            
+            // Initialize default view
+            renderAgendaView();
+            
+            // Update active buttons
+            setTimeout(() => {
+              updateActiveButtons();
+            }, 100);
+            
+            console.log('Aplicación inicializada correctamente');
+          } catch (error) {
+            console.error('Error al inicializar la aplicación:', error);
+            // Show error message to user
+            showNotification('Error al cargar la aplicación. Recarga la página.');
+          }
+          
+          // Check if app is already installed
           if (window.matchMedia('(display-mode: standalone)').matches) {
             console.log('App ejecutándose en modo standalone');
             // Hide install button if already installed
